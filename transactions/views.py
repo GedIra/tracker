@@ -16,12 +16,11 @@ from django.http import JsonResponse
 @login_required(login_url='/auth/login/')
 def index(request):
     user = request.user
-    employees = Employee.objects.all()
-    #expenses = Expense.objects.filter(b)
+    user_employers = user.employers.all()
     context = {
-
+        "businesses": user_employers,
     }
-    return render(request, 'expenses/index.html')
+    return render(request, 'expenses/index.html', context)
 
 
 def get_categories(request, business_id):

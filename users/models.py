@@ -84,4 +84,4 @@ class Employee(models.Model):
     unique_together = ['employee', 'company']
 
   def __str__(self):
-    return f'{self.employee.username}'
+    return f'{self.employee.username} for {self.company.name}'

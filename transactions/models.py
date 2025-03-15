@@ -24,10 +24,11 @@ class Expense(models.Model):
 
 class Category(models.Model):
     company = models.ForeignKey(to=Business, on_delete=models.CASCADE, related_name="expense_categories")
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
 
     class Meta:
         verbose_name_plural = 'Categories'
+        unique_together = ['company', 'name']
 
     def __str__(self):
         return f"{self.name}"
