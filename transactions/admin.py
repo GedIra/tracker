@@ -6,7 +6,7 @@ from .models import Expense, Category
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ['name', 'business', 'category', 'author', 'amount']
-    list_filter = ['category', 'author']
+    list_filter = ['business', 'category', 'author']
     ordering = ['name', 'category', 'amount']
     search_fields = ['name', 'category', 'author']
 
