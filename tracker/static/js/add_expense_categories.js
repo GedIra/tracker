@@ -17,7 +17,6 @@ function fetchCategories(businessId) {
     categorySelect.innerHTML = '<option value="" disabled selected>Select expense category</option>';
 
     if (businessId) {
-        console.log("Id is present")
         fetch(`/get-categories/${businessId}/`)
         .then(response => response.json())
         .then(data => {
@@ -33,8 +32,5 @@ function fetchCategories(businessId) {
             }
         })
         .catch(error => console.error("Error fetching categories:", error));
-    }
-    else{
-        console.log("Id absent")
     }
 }

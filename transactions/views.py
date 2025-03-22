@@ -7,6 +7,10 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.core.paginator import Paginator
+import json
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
+
 
 # Create your views here.
 
@@ -97,11 +101,14 @@ def expenseEditView(request, pk):
         elif request.method == 'POST':
             amount = request.POST.get("amount")
             date = request.POST.get("date")
-            category = request.POST.get("category")
+            category_id = request.POST.get("category")
             description = request.POST.get("description")
             name = request.POST.get("name")
             author = request.user
-
+            
+            if category_id:
+                id = int(category_id)
+                category = Category.objects.get(id=id)
 
             if amount:
                 amount = float(amount)
@@ -110,7 +117,7 @@ def expenseEditView(request, pk):
                     return render(request, 'expenses/edit-expense.html', context)
 
             if not all([amount, date, category, name, description]):
-                messages.error(request, "All fields are required is required")
+                messages.error(request, "All fields are required")
                 return render(request, 'expenses/edit-expense.html', context)
             
             expense.name = name
@@ -126,7 +133,7 @@ def expenseEditView(request, pk):
 def business_expenses(request, businessId):
     business = Business.objects.get(id=businessId)
     expenses = Expense.objects.filter(business= business) 
-    business = business.name #to send the name only
+    business_name = business.name #to send the name only
 
     """Pagination"""
     paginator = Paginator(expenses, 5)  # Show 5 expenses per page.
@@ -134,10 +141,49 @@ def business_expenses(request, businessId):
     page_obj = paginator.get_page(page_number)
     context = {
         "page_obj": page_obj, #render a number of expenses available per page
-        "business": business,
+        "business": business_name,
     }
-
     return render(request, 'expenses/business_expenses.html', context)
+
+def search_expenses(request):
+    user = request.user
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        search_str = data.get("searchStr", "").strip()
+        business_name = data.get("business", "").strip()
+        business = Business.objects.get(name=business_name)
+
+        # Get business if provided, otherwise assign user’s businesses
+        if business_name:
+            business = Business.objects.filter(name=business_name).first()
+            businesses = [business] if business else []
+        else:
+            businesses = user.employers.all()
+
+        if not search_str:
+            return JsonResponse([], safe=False)
+
+        expenses = Expense.objects.filter(
+            Q(business__in=businesses) &
+            (Q(name__icontains=search_str) |
+             Q(amount__startswith=search_str) |
+             Q(category__name__icontains=search_str) |
+             Q(description__icontains=search_str) |
+             Q(date__istartswith=search_str))
+        )
+        data = [
+            {
+                "name": str(expense.name),
+                "category": expense.category.name,
+                "id": expense.id,
+                "amount": float(expense.amount),
+                "date": str(expense.date)
+            }
+            for expense in expenses
+        ] 
+        return JsonResponse(data, safe=False)
+
+
 
 
 
