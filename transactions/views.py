@@ -10,6 +10,7 @@ from django.core.paginator import Paginator
 import json
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from user_preferences.models import UserPreference
 
 
 # Create your views here.
@@ -19,15 +20,13 @@ from django.shortcuts import get_object_or_404
 def index(request):
     user = request.user
     user_employers = user.employers.all()
+    currency_str = UserPreference.objects.filter(user=user).first().currency
+    currency = json.loads(currency_str.replace("'", "\""))  # Convert string to dictionary
     context = {
         "businesses": user_employers,
+        "currency": currency['value']
     }
     return render(request, 'expenses/index.html', context)
-
-def business_expenses(request, business_id):
-    business = Business.objects.get(id=business_id)
-    expenses = business.expenses.all()[:3]  # Fetch only the first 3 expenses
-    return render(request, 'business_expenses.html', {'business': business, 'expenses': expenses})
 
 
 def get_categories(request, business_id):
@@ -67,13 +66,14 @@ def add_expenses(request):
             return render(request, 'expenses/add-expenses.html', context)
         
         
-        # expense = Expense.objects.create(
-        #     name = name,
-        #     category = category,
-        #     author = author,
-        #     description = description,
-        #     date = date
-        # )
+        expense = Expense.objects.create(
+            name = name,
+            category = category,
+            author = author,
+            description = description,
+            date = date
+        )
+        expense.save()
 
         messages.success(request,"Expense saved successfully")
 
@@ -86,11 +86,9 @@ def expenseEditView(request, pk):
     user = request.user
     user_employers = user.employers.all()
     expense = Expense.objects.get(pk=pk)
-    date = expense.date.strftime('%Y-%m-%d')
 
     context = {
         "data": expense,
-        "date": date,
         "businesses": user_employers
     }
 
@@ -126,13 +124,16 @@ def expenseEditView(request, pk):
             expense.description = description
             expense.date = date
             messages.success(request,"Expense saved successfully")
-
             return redirect('expenses')
     return render(request, 'expenses/edit-expense.html', context)
 
 def business_expenses(request, businessId):
+    user = request.user
+    currency_str = UserPreference.objects.filter(user=user).first().currency
+    currency = json.loads(currency_str.replace("'", "\""))  # Convert string to dictionary
+    currency = currency['value']
     business = Business.objects.get(id=businessId)
-    expenses = Expense.objects.filter(business= business) 
+    expenses = Expense.objects.filter(business= business)
     business_name = business.name #to send the name only
 
     """Pagination"""
@@ -142,6 +143,7 @@ def business_expenses(request, businessId):
     context = {
         "page_obj": page_obj, #render a number of expenses available per page
         "business": business_name,
+        "currency": currency
     }
     return render(request, 'expenses/business_expenses.html', context)
 
@@ -164,12 +166,14 @@ def search_expenses(request):
             return JsonResponse([], safe=False)
 
         expenses = Expense.objects.filter(
-            Q(business__in=businesses) &
-            (Q(name__icontains=search_str) |
-             Q(amount__startswith=search_str) |
-             Q(category__name__icontains=search_str) |
-             Q(description__icontains=search_str) |
-             Q(date__istartswith=search_str))
+            Q(business__in=businesses) & (
+                Q(name__icontains=search_str) |
+                Q(amount__startswith=search_str) |
+                Q(category__name__icontains=search_str) |
+                Q(description__icontains=search_str) |
+                Q(date__istartswith=search_str)
+            )
+            
         )
         data = [
             {

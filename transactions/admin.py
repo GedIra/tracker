@@ -8,7 +8,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_display = ['name', 'business', 'category', 'author', 'amount']
     list_filter = ['business', 'category', 'author']
     ordering = ['name', 'category', 'amount']
-    search_fields = ['name', 'category', 'author']
+    search_fields = ['name', 'category__name__istartswith', 'author__username__istartswith', "date"]
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
