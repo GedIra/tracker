@@ -1,9 +1,9 @@
-from django.urls import path
+from django.urls import path, include
+from incomes import urls as income_urls
 from .views import (
     index, add_expenses, get_categories, expenseEditView, business_expenses, search_expenses
 )
 from django.views.decorators.csrf import csrf_exempt 
-
 
 
 urlpatterns = [
@@ -13,4 +13,5 @@ urlpatterns = [
     path('edit-expense/<int:pk>/', expenseEditView, name="edit-expense"),
     path('<int:businessId>/expenses/', business_expenses, name="business-expenses"),
     path('search-expenses/', csrf_exempt(search_expenses), name='search-expenses'),
+    path('incomes/', include(income_urls))
 ]
