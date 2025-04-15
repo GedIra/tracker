@@ -13,9 +13,17 @@ from django.contrib import messages
 def index(request):
     user = request.user 
     preference = UserPreference.objects.filter(user=user).first()
-    currency = json.loads(preference.currency.replace("'", "\""))  # Convert string to dictionary
+
+    currency = {"name": "", "value": ""}  # fallback default
+
+    if preference and preference.currency:
+        try:
+            currency = json.loads(preference.currency.replace("'", "\""))
+        except json.JSONDecodeError:
+            pass
 
     currency_data = []
+
     file_path =os.path.join(settings.BASE_DIR, 'currencies.json')
     with open(file_path, 'r') as file:
         data = json.load(file)

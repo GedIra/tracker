@@ -20,8 +20,16 @@ from user_preferences.models import UserPreference
 def index(request):
     user = request.user
     user_employers = user.employers.all()
-    currency_str = UserPreference.objects.filter(user=user).first().currency
-    currency = json.loads(currency_str.replace("'", "\""))  # Convert string to dictionary
+    preference = UserPreference.objects.filter(user=user).first()
+
+    currency = {"name": "", "value": ""}  # fallback default
+
+    if preference and preference.currency:
+        try:
+            currency = json.loads(preference.currency.replace("'", "\""))
+        except json.JSONDecodeError:
+            pass
+
     context = {
         "businesses": user_employers,
         "currency": currency['value']
