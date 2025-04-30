@@ -1,5 +1,5 @@
 const searchBar = document.querySelector("#searchBar");
-const table = document.querySelector(".expensesTable");
+const table = document.querySelector(".incomesTable");
 const noMatch = document.querySelector(".noMatch");
 const paginationWrapper = document.getElementById("paginationWrapper");
 const outputTable = document.querySelector(".tableOutput");
@@ -19,7 +19,7 @@ searchBar.addEventListener("keyup", (e) => {
         table.style.display = "none";
         paginationWrapper.style.display = "none";
 
-        fetch("/search-expenses/", {
+        fetch("/incomes/search-incomes/", {
             body: JSON.stringify({ searchStr: searchValue, business: business }),
             method: 'POST',
         })
@@ -36,18 +36,18 @@ searchBar.addEventListener("keyup", (e) => {
                 noMatch.style.display = "none";  // Hide "No Match" message
                 outputTable.style.display = "block"; // Show search results
 
-                data.forEach(expense => {
-                    const editUrl = `/edit-expense/${expense.id}/`;  // Construct URL dynamically
-                    const deleteUrl = `/delete-expense/${expense.id}/`;
-                    const formattedAmount = Number(expense.amount).toLocaleString(undefined, {
+                data.forEach(income => {
+                    const editUrl = `/edit-income/${income.id}/`;  // Construct URL dynamically
+                    const deleteUrl = `/delete-income/${income.id}/`; 
+                    const formattedAmount = Number(income.amount).toLocaleString(undefined, {
                         maximumSignificantDigits: 3,
                     });
 
                     const row = `<tr class="text-center">
-                        <td class="text-left">${expense.name}</td>
-                        <td>${expense.category}</td>
+                        <td class="text-left">${income.name}</td>
+                        <td>${income.source}</td>
                         <td>${formattedAmount}</td>
-                        <td>${expense.date}</td>
+                        <td>${income.date}</td>
                         <td class="text-sm-center">
                             <a class="btn btn-sm btn-outline-primary mr-sm-2" href="${editUrl}">Edit</a>
                             <a class="btn btn-sm btn-outline-danger" href="${deleteUrl}">Delete</a>

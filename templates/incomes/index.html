@@ -16,7 +16,7 @@
                 </nav>
             </div>
             <div class="d-grid col-md-2 text-md-center">
-                <a href='{% url "add-expenses" %}' class="btn btn-primary btn-block">Add income</a>
+                <a href='{% url "add-incomes" %}' class="btn btn-primary btn-block">Add income</a>
             </div>
         </div>
         {% include "partials/_messages.html" %}
@@ -33,8 +33,8 @@
                                         <a class="btn btn-outline-primary btn-block" href='{% url "business-incomes" business.pk %}'>view all</a>
                                     </th>
                                 </tr>
-                                <tr>
-                                    <th>NAME</th>
+                                <tr class="text-center">
+                                    <th class="text-left">NAME</th>
                                     <th>Source</th>
                                     <th>AMOUNT ({{ currency }})</th>
                                     <th>DATE</th>
@@ -43,10 +43,10 @@
                             </thead>
                             <tbody>
                                 {% for income in business.incomes.all|slice:":3" %}
-                                    <tr>
-                                        <td>{{ income.name }}</td>
+                                    <tr class="text-center">
+                                        <td class="text-left">{{ income.name }}</td>
                                         <td>{{ income.source }}</td>
-                                        <td>{{ income.amount }}</td>
+                                        <td>{{ income.amount | floatformat:"-3g" }}</td>
                                         <td>{{ income.date }}</td>
                                         <td class="text-sm-center">
                                             <a class="btn btn-sm btn-outline-primary mr-sm-1" href='{% url "edit-income" income.id %}'>Edit</a>
@@ -63,3 +63,7 @@
          
     </div>
 {% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+{% endblock scripts %}

@@ -6,15 +6,15 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
-                <a href="{% url 'expenses' %}">Expenses</a>
+                <a href="{% url 'incomes' %}">Incomes</a>
             </li>
-            <li class="breadcrumb-item active" aria-current="page">Add Expenses</li>
+            <li class="breadcrumb-item active" aria-current="page">Add Incomes</li>
         </ol>
     </nav>
 
     <div class="card">
         <div class="card-body">
-            <form action="{% url 'add-expenses' %}" method="post">
+            <form action="{% url 'add-incomes' %}" method="post">
                 {% csrf_token %}
                 {% include 'partials/_messages.html' %}
             
@@ -28,21 +28,25 @@
                     <select class="form-control form-control-sm"
                         id="business"
                         name="business">
-                        {% for business in businesses %}
-                            <option value="{{ business.id }}" {% if data.business == business %}selected{% endif %}>
-                                {{ business.name }}
-                            </option>
-                        {% endfor %}
+                            {% for business in businesses %}
+                                <option value="{{ business.id }}" {% if data.business.id == business.id %}selected{% endif %}>
+                                    {{ business.name }}
+                                </option>
+                            {% endfor %}
                     </select>
                 </div>
             
                 <div class="form-group">
-                    <label for="category">Category</label>
+                    <label for="source">Source</label>
                     <select class="form-control form-control-sm"
-                        id="category"
-                        name="category"
-                        data-placeholder="Select expense category">
-                        <option value="">Select expense category</option>
+                        id="source"
+                        name="source">
+                            <option value="" disabled>Select income source</option>
+                            {% for source in sources %}
+                                <option value="{{ source.id }}" {% if data.source.id == source.id %}selected{% endif %}>
+                                    {{ source.name }}
+                                </option>
+                            {% endfor %}
                     </select>
                 </div>
             
@@ -61,7 +65,7 @@
                     <input type="date" class="form-control form-control-sm" id="date" name="date" value="{{ data.date|date:'Y-m-d' }}">
                 </div>
             
-                <input class="btn btn-primary" value="Add Expense" type="submit">
+                <input class="btn btn-primary" value="Add Income" type="submit">
             </form>
             
         </div>

@@ -33,8 +33,8 @@
                                         <a class="btn btn-outline-primary btn-block" href='{% url "business-expenses" business.pk %}'>view all</a>
                                     </th>
                                 </tr>
-                                <tr>
-                                    <th>NAME</th>
+                                <tr class="text-center">
+                                    <th class="text-left">NAME</th>
                                     <th>CATEGORY</th>
                                     <th>AMOUNT ({{ currency }})</th>
                                     <th>DATE</th>
@@ -43,10 +43,10 @@
                             </thead>
                             <tbody>
                                 {% for expense in business.expenses.all|slice:":3" %}
-                                    <tr>
-                                        <td>{{ expense.name }}</td>
+                                    <tr class="text-center">
+                                        <td class="text-sm-left">{{ expense.name }}</td>
                                         <td>{{ expense.category }}</td>
-                                        <td>{{ expense.amount }}</td>
+                                        <td>{{ expense.amount | floatformat:"-3g" }}</td>
                                         <td>{{ expense.date }}</td>
                                         <td class="text-sm-center">
                                             <a class="btn btn-sm btn-outline-primary mr-sm-1" href='{% url "edit-expense" expense.id %}'>Edit</a>
@@ -63,4 +63,8 @@
          
     </div>
 {% endblock content %}
+
+{% block scripts %}
+    {{ block.super }}
+{% endblock scripts %}
 
