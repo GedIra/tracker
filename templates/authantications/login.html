@@ -12,39 +12,43 @@
                 <h4>Login</h4>
             </div>
 
-                <form action="{% url 'login' %}" method="post">
-                {% csrf_token %}
-                {% include 'partials/_messages.html' %}
-                    
-                    <div class="form-group">
-                        <input 
-                            type="text" 
-                            name="username" 
-                            id="usernameField" 
-                            placeholder="Username"
-                            class="form-control form-control-sm"
-                            required
+            <form action="{% url 'login' %}" method="post">
+            {% csrf_token %}
+            {% include 'partials/_messages.html' %}
+                
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        name="username" 
+                        id="usernameField" 
+                        placeholder="Username"
+                        class="form-control form-control-sm"
+                        required
 
-                        />
-                    </div>
+                    />
+                </div>
 
-                    <div class="form-group">
-                        <input 
-                            type="password" 
-                            name="password" 
-                            id="passwordField" 
-                            placeholder="Password"
-                            class="form-control form-control-sm" 
-                            required
-                        />
-                    </div>
-                    
-                    <input type="submit" value="Login" class="btn btn-block btn-primary login-btn" disabled/>
-                </form>
-                <a href="{% url 'register' %}">
-                    <button class="btn btn-block btn-primary">SignUp</button>
-                </a>
+                <div class="form-group">
+                    <input 
+                        type="password" 
+                        name="password" 
+                        id="passwordField" 
+                        placeholder="Password"
+                        class="form-control form-control-sm" 
+                        required
+                    />
+                </div>
+                
+                <input type="submit" value="Login" class="btn btn-block btn-primary login-btn" disabled/>
+            </form>
+            <div>
+                <span class="text-lead lead"> Forgot the password ? </span>
+                <a href="{% url 'password-reset' %}">Reset</a><br>
+                <span class="text-lead lead"> Don't have account ? </span>
+                <a href="{% url 'register' %}">SignUp</a><br>
             </div>
+            
+        </div>
         </div>
     </div>
     <div class="col-md-4"></div>

@@ -16,6 +16,7 @@ from users.utils import token_generator
 from .forms import CustomLoginForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 
 User = get_user_model()
 
@@ -144,6 +145,101 @@ class LogoutView(View):
         messages.success(request, "Successfully logged out, Login Again!")
         return redirect('login')
     
+class PasswordResetView(View):
+    def get(self, request):    
+        user = request.user
+        email = user.email if user.is_authenticated else ''
+        context = {'email': email}
+        return render(request, 'authantications/password-reset.html', context)
+    
+    def post(self, request):
+        email = request.POST.get('email', '').strip()
 
+        if not validate_email(email):
+            messages.error(request, 'Invalid email')
+            return render(request, 'authantications/password-reset.html', {'email': email})
+        
+        user = User.objects.filter(email=email).first()
+        if not user:
+            messages.error(request, 'User with this email not found')
+            return render(request, 'authantications/password-reset.html', {'email': email})
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = PasswordResetTokenGenerator().make_token(user=user)
+        link = reverse('set-new-password', kwargs={'uid': uid, 'token': token})
+        domain = get_current_site(request).domain
+        password_reset_url = f"https://{domain}{link}"
+        
+        email = EmailMessage(
+            subject = "Password Resent Link",
+            body= f"Hello There\nUse this link to Reset your Finance tracker password\nlink: {password_reset_url}",
+            from_email="noreply@semycolon.com",
+            to=["irankundag65@gmail.com",]
+        )
+        email.send(fail_silently=True)
+        # Here you would generate a token and send an email.
+        messages.success(request, 'Password reset link sent to your email')
+        return render(request, 'authantications/password-reset.html')
+
+    
+class CompletePasswordResetView(View):
+    def get(self, request, uid, token):
+        context = {
+            'uid': uid,
+            'token': token
+        }
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except Exception:
+            messages.info(request, "Something went wrong. Please try again.")
+            return render(request, 'authantications/set-new-password.html', context)
+
+        if not PasswordResetTokenGenerator().check_token(user, token):
+            messages.info(request, "Oops! Link expired or invalid. Request a new one.")
+            return render(request, 'authantications/password-reset.html', context)
+
+        return render(request, 'authantications/set-new-password.html', context)
+
+    def post(self, request, uid, token):
+        context = {
+            'uid': uid,
+            'token': token,
+            'data': request.POST
+        }
+
+        password1 = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+
+        # Validate password strength
+        password_errors = password_check(passwd=password1)
+        if password_errors:
+            for error in password_errors:
+                messages.error(request, error)
+            return render(request, 'authantications/set-new-password.html', context)
+
+        # Check passwords match
+        if password1 != password2:
+            messages.error(request, "Passwords do not match!")
+            return render(request, 'authantications/set-new-password.html', context)
+
+        # Validate user and token again
+        try:
+            user_id = force_str(urlsafe_base64_decode(uid))
+            user = User.objects.get(pk=user_id)
+        except Exception:
+            messages.info(request, "Something went wrong. Please try again.")
+            return render(request, 'authantications/set-new-password.html', context)
+
+        if not PasswordResetTokenGenerator().check_token(user, token):
+            messages.info(request, "Invalid or expired token. Try resetting again.")
+            return redirect('password-reset')  # Or wherever your reset page is
+
+        # Set the new password
+        user.set_password(password1)
+        user.save()
+
+        messages.success(request, "Password reset successful! You can now log in.")
+        return redirect('login')
 
 
